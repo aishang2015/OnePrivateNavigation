@@ -1,0 +1,65 @@
+﻿@rendermode InteractiveWebAssembly
+
+@implements IBrowserViewportObserver
+@implements IAsyncDisposable
+@inject IBrowserViewportService BreakpointService
+
+@if (_navMenuState.IsNavMenuOpen)
+{
+    <MudPaper Elevation="2" Class="flex-none pa-2" Style="@GetNavMenuStyle()">
+        <MudNavMenu>
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+            <MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
+            <MudNavLink Href="weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Weather</MudNavLink>
+        </MudNavMenu>
+    </MudPaper>
+}
+
+@code {
+    private bool _isMobile = false;
+
+    protected override void OnInitialized()
+    {
+        _navMenuState.OnNavMenuToggleEvent += c => StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await BreakpointService.SubscribeAsync(this, fireImmediately: true);
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await BreakpointService.UnsubscribeAsync(this);
+    }
+
+    public Guid Id { get; } = Guid.NewGuid();
+
+    public Task NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+    {
+        var breakpoint = browserViewportEventArgs.Breakpoint;
+        if (breakpoint <= Breakpoint.Sm)
+        {
+            _isMobile = true;
+            _navMenuState.ToggleNavMenu(false);
+        }
+        else
+        {
+            _isMobile = false;
+            _navMenuState.ToggleNavMenu(true);
+        }
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private string GetNavMenuStyle()
+    {
+        return _isMobile
+            ? "position:fixed; width: 250px; z-index: 1000; top: calc(var(--mud-appbar-height) - var(--mud-appbar-height) / 4); left: 0; bottom: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"
+            : "width: 250px;";
+    }
+}

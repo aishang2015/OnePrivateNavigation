@@ -1,0 +1,31 @@
+﻿@using OnePrivateNavigation.Client.Shared
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@inherits LayoutComponentBase
+
+<ProviderAggregate />
+
+<AuthorizeView>
+    <Authorized>
+        <div style="height:100vh;width:100%;" class="d-flex flex-column">
+            <NavBar />
+            <div class="flex-1 d-flex" style="height:0;">
+                <NavMenu />
+                <div class="flex-1 pa-2" style="width:0;height:100%;overflow-y:auto;overflow-x:hidden;">
+                    @Body
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div style="height:100vh;width:100%;overflow-x:hidden;overflow-y:auto;">
+            @Body
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

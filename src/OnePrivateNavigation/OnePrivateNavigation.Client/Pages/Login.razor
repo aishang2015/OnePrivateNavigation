@@ -1,0 +1,68 @@
+﻿@using OnePrivateNavigation.Common.Models
+@using OnePrivateNavigation.Common.Models.Auth
+@using Blazored.LocalStorage
+
+@rendermode InteractiveWebAssembly
+
+<div class="d-flex justify-center align-center" style="min-height: 100vh;">
+    <MudPaper Elevation="3" Class="pa-6 py-12" Style="width: 100%; max-width: 400px;">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">登录</MudText>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string" Label="用户名" @bind-Value="username" Required="true"
+                RequiredError="请输入用户名" Class="mb-3" />
+            <MudTextField T="string" Label="密码" @bind-Value="password" Required="true"
+                RequiredError="请输入密码" InputType="InputType.Password" Class="mb-4" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true"
+                OnClick="HandleLogin">登录</MudButton>
+        </MudForm>
+    </MudPaper>
+</div>
+
+@code {
+    MudForm form;
+    bool success;
+    string username;
+    string password;
+    private readonly HttpClient _httpClient = new();
+
+    private async Task HandleLogin()
+    {
+        await form.Validate();
+        if (success)
+        {
+            try
+            {
+                var loginRequest = new LoginRequest
+                {
+                    Username = username,
+                    Password = password,
+                    RememberMe = false
+                };
+
+                var response = await _httpClient.PostAsJsonAsync(_navigationManager.BaseUri + "api/auth/login", loginRequest);
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>();
+
+                if (response.IsSuccessStatusCode && result?.Success == true)
+                {
+                    var token = result.Data?.Token;
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _localStorage.SetItemAsStringAsync("authToken", token);
+                        await _jsRuntime.InvokeVoidAsync("blazorCookie.setCookie", "authToken", token);
+                        _snackbar.Add("登录成功", Severity.Success);
+                        _navigationManager.NavigateTo("/");
+                    }
+                }
+                else
+                {
+                    _snackbar.Add(result?.Message ?? "登录失败", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("登录过程中发生错误", Severity.Error);
+                Console.WriteLine($"Login error: {ex.Message}");
+            }
+        }
+    }
+}

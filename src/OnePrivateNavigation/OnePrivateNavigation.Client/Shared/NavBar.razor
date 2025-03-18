@@ -1,0 +1,34 @@
+﻿@using Blazored.LocalStorage
+@rendermode InteractiveWebAssembly
+
+<MudAppBar Elevation="1" Dense=true Fixed=false>
+    <MudIconButton OnClick="ToggleDrawer" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"></MudIconButton>
+    <MudIcon Icon="@Icons.Custom.Brands.Chrome" Size="Size.Large" />
+    <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
+    <MudSpacer />
+    <MudMenu>
+        <ActivatorContent>
+            <MudAvatar Color="Color.Default">
+                <MudIcon Icon="@Icons.Material.Filled.Person" />
+            </MudAvatar>
+        </ActivatorContent>
+        <ChildContent>
+            <MudMenuItem Label="退出登录" Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" />
+        </ChildContent>
+    </MudMenu>
+</MudAppBar>
+
+@code {
+
+    private async Task HandleLogout()
+    {
+        await _localStorage.RemoveItemAsync("authToken");
+        await _jsRuntime.InvokeVoidAsync("blazorCookie.deleteCookie", "authToken");
+        await _jsRuntime.InvokeVoidAsync("navigationManager.locateTo", _navigationManager.BaseUri);
+    }
+
+    private void ToggleDrawer()
+    {
+        _navMenuState.ToggleNavMenu(!_navMenuState.IsNavMenuOpen);
+    }
+}
