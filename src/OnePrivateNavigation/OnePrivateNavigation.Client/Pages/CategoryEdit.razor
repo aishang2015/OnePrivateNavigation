@@ -1,52 +1,50 @@
-@page "/category/edit"
-@page "/category/edit/{Id:int}"
 @using OnePrivateNavigation.Common.Models
 @using OnePrivateNavigation.Common.Models.Category
 @using System.Net.Http.Json
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
-@rendermode InteractiveAuto
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.Small">
+            <MudText Typo="Typo.h6" Class="mb-4">@(Id == null ? "添加分组" : "编辑分组")</MudText>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
-    <MudPaper Class="pa-4">
-        <MudText Typo="Typo.h5" Class="mb-4">@(Id == null ? "添加分组" : "编辑分组")</MudText>
+            <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudTextField Label="名称" @bind-Value="model.Name" For="@(() => model.Name)" />
+                    </MudItem>
 
-        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
-            <DataAnnotationsValidator />
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudTextField Label="名称" @bind-Value="model.Name" For="@(() => model.Name)" />
-                </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="描述" @bind-Value="model.Description" Lines="3" />
+                    </MudItem>
 
-                <MudItem xs="12">
-                    <MudTextField Label="描述" @bind-Value="model.Description" Lines="3" />
-                </MudItem>
+                    <MudItem xs="12">
+                        <MudNumericField Label="显示顺序" @bind-Value="model.DisplayOrder" />
+                    </MudItem>
 
-                <MudItem xs="12">
-                    <MudNumericField Label="显示顺序" @bind-Value="model.DisplayOrder" />
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Checked="model.IsVisible" Label="是否显示" Color="Color.Primary" />
-                </MudItem>
-
-                <MudItem xs="12" Class="d-flex gap-4">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">保存</MudButton>
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="NavigateBack">返回</MudButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-    </MudPaper>
-</MudContainer>
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Checked="model.IsVisible" Label="是否显示" Color="Color.Primary" />
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">取消</MudButton>
+        <MudButton Color="Color.Primary" OnClick="HandleValidSubmit">保存</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
-    [Parameter]
-    public int? Id { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int? Id { get; set; }
 
     private CategoryRequest model = new();
 
     protected override async Task OnInitializedAsync()
-    {
+    {   
         if (Id.HasValue)
         {
             using var Http = new HttpClient();
@@ -74,7 +72,7 @@
             {
                 await Http.PostAsJsonAsync(NavigationManager.BaseUri + "api/Category", model);
             }
-            NavigateBack();
+            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception)
         {
@@ -82,8 +80,5 @@
         }
     }
 
-    private void NavigateBack()
-    {
-        NavigationManager.NavigateTo("/management");
-    }
+    private void Cancel() => MudDialog.Cancel();
 }

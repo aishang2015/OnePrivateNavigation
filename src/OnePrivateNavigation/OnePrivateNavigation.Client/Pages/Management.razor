@@ -7,18 +7,18 @@
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 @rendermode InteractiveAuto
 
 <div class="container">
-
     <div class="nav-grid">
         @foreach (var category in categories)
         {
             <div class="nav-card">
                 <div class="nav-card-header">
                     <h2>@category.Name</h2>
-                    <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => NavigationManager.NavigateTo($"/category/edit/{category.Id}"))">
+                    <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenCategoryDialog(category.Id))">
                         <i class="fas fa-edit"></i> 编辑
                     </button>
                     <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => DeleteCategory(category.Id))">
@@ -31,7 +31,7 @@
                         {
                             <button class="site-button">
                                 <span>@site.Title</span>
-                                <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => NavigationManager.NavigateTo($"/website/edit/{site.Id}"))">
+                                <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenWebsiteDialog(site.Id))">
                                     <i class="fas fa-edit"></i> 编辑
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteWebsite(site.Id)">
@@ -40,7 +40,7 @@
                             </button>
                         }
                         <button class="site-button">
-                            <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => NavigationManager.NavigateTo($"/website/edit"))">
+                            <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenWebsiteDialog(null))">
                                 <i class="fas fa-edit"></i> 添加
                             </button>
                         </button>
@@ -50,13 +50,12 @@
         }
         <div class="nav-card">
             <div class="nav-card-header">
-                <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => NavigationManager.NavigateTo($"/category/edit"))">
+                <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenCategoryDialog(null))">
                     <i class="fas fa-edit"></i> 添加新分组
                 </button>
             </div>
         </div>
     </div>
-
 </div>
 
 @code {
@@ -77,6 +76,40 @@
 
         var websitesResponse = await http.GetFromJsonAsync<ApiResponse<List<WebsiteResponse>>>(NavigationManager.BaseUri + "api/Website");
         websites = websitesResponse?.Data;
+    }
+
+    private async Task OpenCategoryDialog(int? categoryId)
+    {
+        var parameters = new DialogParameters();
+        if (categoryId.HasValue)
+        {
+            parameters.Add(nameof(CategoryEdit.Id), categoryId.Value);
+        }
+
+        var dialog = await DialogService.ShowAsync<CategoryEdit>(categoryId.HasValue ? "编辑分组" : "添加分组", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task OpenWebsiteDialog(int? websiteId)
+    {
+        var parameters = new DialogParameters();
+        if (websiteId.HasValue)
+        {
+            parameters.Add(nameof(WebsiteEdit.Id), websiteId.Value);
+        }
+
+        var dialog = await DialogService.ShowAsync<WebsiteEdit>(websiteId.HasValue ? "编辑导航" : "添加导航", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+        }
     }
 
     private async Task DeleteCategory(int id)
