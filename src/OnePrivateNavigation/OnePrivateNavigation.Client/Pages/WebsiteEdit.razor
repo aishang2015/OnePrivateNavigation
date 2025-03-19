@@ -1,0 +1,121 @@
+@page "/website/edit"
+@page "/website/edit/{Id:int}"
+@using OnePrivateNavigation.Common.Models
+@using OnePrivateNavigation.Common.Models.Website
+@using OnePrivateNavigation.Common.Models.Category
+@using System.Net.Http.Json
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveAuto
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h5" Class="mb-4">@(Id == null ? "添加导航" : "编辑导航")</MudText>
+
+        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField Label="标题" @bind-Value="model.Title" For="@(() => model.Title)" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField Label="网址" @bind-Value="model.Url" For="@(() => model.Url)" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField Label="描述" @bind-Value="model.Description" Lines="3" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField Label="图标" @bind-Value="model.Icon" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudNumericField Label="显示顺序" @bind-Value="model.DisplayOrder" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSelect T="int" Label="所属分组" @bind-Value="model.CategoryId" For="@(() => model.CategoryId)">
+                        @if (categories != null)
+                        {
+                            @foreach (var category in categories)
+                            {
+                                <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Checked="model.IsVisible" Label="是否显示" Color="Color.Primary" />
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex gap-4">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">保存</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="NavigateBack">返回</MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private WebsiteRequest model = new();
+    private List<CategoryResponse>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var Http = new HttpClient();
+        var categoriesResponse = await Http.GetFromJsonAsync<ApiResponse<List<CategoryResponse>>>(NavigationManager.BaseUri + "api/Category");
+        categories = categoriesResponse?.Data;
+
+        if (Id.HasValue)
+        {
+            var response = await Http.GetFromJsonAsync<ApiResponse<WebsiteResponse>>(NavigationManager.BaseUri + $"api/Website/{Id}");
+            if (response?.Data != null)
+            {
+                model.Title = response.Data.Title;
+                model.Url = response.Data.Url;
+                model.Description = response.Data.Description;
+                model.Icon = response.Data.Icon;
+                model.DisplayOrder = response.Data.DisplayOrder;
+                model.IsVisible = response.Data.IsVisible;
+                model.CategoryId = response.Data.CategoryId;
+            }
+        }
+        else if (categories?.Any() == true)
+        {
+            model.CategoryId = categories.First().Id;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            using var Http = new HttpClient();
+            if (Id.HasValue)
+            {
+                await Http.PutAsJsonAsync(NavigationManager.BaseUri + $"api/Website/{Id}", model);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync(NavigationManager.BaseUri + "api/Website", model);
+            }
+            NavigateBack();
+        }
+        catch (Exception)
+        {
+            // Handle error
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/management");
+    }
+}

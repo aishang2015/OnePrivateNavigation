@@ -1,0 +1,89 @@
+@page "/category/edit"
+@page "/category/edit/{Id:int}"
+@using OnePrivateNavigation.Common.Models
+@using OnePrivateNavigation.Common.Models.Category
+@using System.Net.Http.Json
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveAuto
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h5" Class="mb-4">@(Id == null ? "添加分组" : "编辑分组")</MudText>
+
+        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField Label="名称" @bind-Value="model.Name" For="@(() => model.Name)" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField Label="描述" @bind-Value="model.Description" Lines="3" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudNumericField Label="显示顺序" @bind-Value="model.DisplayOrder" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Checked="model.IsVisible" Label="是否显示" Color="Color.Primary" />
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex gap-4">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">保存</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="NavigateBack">返回</MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private CategoryRequest model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            using var Http = new HttpClient();
+            var response = await Http.GetFromJsonAsync<ApiResponse<CategoryResponse>>(NavigationManager.BaseUri + $"api/Category/{Id}");
+            if (response?.Data != null)
+            {
+                model.Name = response.Data.Name;
+                model.Description = response.Data.Description;
+                model.DisplayOrder = response.Data.DisplayOrder;
+                model.IsVisible = response.Data.IsVisible;
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            using var Http = new HttpClient();
+            if (Id.HasValue)
+            {
+                await Http.PutAsJsonAsync(NavigationManager.BaseUri + $"api/Category/{Id}", model);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync(NavigationManager.BaseUri + "api/Category", model);
+            }
+            NavigateBack();
+        }
+        catch (Exception)
+        {
+            // Handle error
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/management");
+    }
+}

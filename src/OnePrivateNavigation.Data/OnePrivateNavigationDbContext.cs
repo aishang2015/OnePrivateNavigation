@@ -18,7 +18,7 @@ namespace OnePrivateNavigation.Data
 
         public DbSet<User> Users { get; set; }
 
-        public DbSet<Category> Categorys { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         public DbSet<Website> Websites { get; set; }
 
