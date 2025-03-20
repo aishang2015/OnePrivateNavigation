@@ -14,7 +14,7 @@
                 <DataAnnotationsValidator />
                 <MudGrid>
                     <MudItem xs="12">
-                        <MudTextField Label="标题" @bind-Value="model.Title" For="@(() => model.Title)" />
+                        <MudTextField Label="名称" @bind-Value="model.Title" For="@(() => model.Title)" />
                     </MudItem>
 
                     <MudItem xs="12">
@@ -26,23 +26,7 @@
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField Label="图标" @bind-Value="model.Icon" />
-                    </MudItem>
-
-                    <MudItem xs="12">
                         <MudNumericField Label="显示顺序" @bind-Value="model.DisplayOrder" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudSelect T="int" Label="所属分组" @bind-Value="model.CategoryId" For="@(() => model.CategoryId)">
-                            @if (categories != null)
-                            {
-                                @foreach (var category in categories)
-                                {
-                                    <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
                     </MudItem>
 
                     <MudItem xs="12">
@@ -61,6 +45,7 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public int? Id { get; set; }
+    [Parameter] public int CategoryId { get; set; }
 
     private WebsiteRequest model = new();
     private List<CategoryResponse>? categories;
@@ -79,15 +64,14 @@
                 model.Title = response.Data.Title;
                 model.Url = response.Data.Url;
                 model.Description = response.Data.Description;
-                model.Icon = response.Data.Icon;
                 model.DisplayOrder = response.Data.DisplayOrder;
                 model.IsVisible = response.Data.IsVisible;
                 model.CategoryId = response.Data.CategoryId;
             }
         }
-        else if (categories?.Any() == true)
+        else
         {
-            model.CategoryId = categories.First().Id;
+            model.CategoryId = CategoryId;
         }
     }
 
