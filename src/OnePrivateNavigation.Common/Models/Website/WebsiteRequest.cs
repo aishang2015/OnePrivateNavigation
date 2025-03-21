@@ -13,8 +13,6 @@ namespace OnePrivateNavigation.Common.Models.Website
 
         public string? Description { get; set; }
 
-        public string? Icon { get; set; }
-
         public int DisplayOrder { get; set; } = 0;
 
         public bool IsVisible { get; set; } = true;

@@ -16,29 +16,40 @@
         @foreach (var category in categories)
         {
             <div class="nav-card">
-                <div class="nav-card-header">
+                <div class="nav-card-header d-flex align-center">
                     <h2>@category.Name</h2>
-                    <MudIconButton Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
+                    <MudSpacer />
+                    <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
                                    OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
-                    <MudIconButton Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"
+                    <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"
                                    OnClick="@(() => DeleteCategory(category.Id))"></MudIconButton>
                 </div>
                 <div class="nav-card-content">
                     <div class="site-grid">
                         @foreach (var site in websites.Where(s => s.CategoryId == category.Id))
                         {
-                            <button class="site-button">
-                                <span>@site.Title</span>
-                                <MudIconButton Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
-                                               OnClick="@(() => OpenWebsiteDialog(site.Id,category.Id))"></MudIconButton>
+                            <MudMenu ActivationEvent="@MouseEvent.MouseOver">
+                                <ActivatorContent>
 
-                                <MudIconButton Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"
-                                               OnClick="@(() => DeleteWebsite(site.Id))"></MudIconButton>
-                            </button>
+                                    <button class="site-button">
+                                        <img src="@(_navigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
+                                        <span>@site.Title</span>
+                                    </button>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem OnClick="@(() => OpenWebsiteDialog(site.Id,category.Id))">
+                                        <MudIcon Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"></MudIcon>
+                                    </MudMenuItem>
+
+                                    <MudMenuItem OnClick="@(() => DeleteWebsite(site.Id))">
+                                        <MudIcon Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"></MudIcon>
+                                    </MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
                         }
                         <button class="site-button">
                             <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenWebsiteDialog(null,category.Id))">
-                                <i class="fas fa-edit"></i> 添加网站
+                                <MudIcon Icon="@Icons.Material.Filled.Add"></MudIcon>
                             </button>
                         </button>
                     </div>
@@ -48,7 +59,7 @@
         <div class="nav-card">
             <div class="nav-card-header">
                 <button class="btn btn-sm btn-outline-primary me-2" @onclick="@(() => OpenCategoryDialog(null))">
-                    <i class="fas fa-edit"></i> 添加新分组
+                    <MudIcon Icon="@Icons.Material.Filled.Add"></MudIcon>
                 </button>
             </div>
         </div>
@@ -56,6 +67,8 @@
 </div>
 
 @code {
+
+
     private List<CategoryResponse>? categories = new();
     private List<WebsiteResponse>? websites = new();
 
@@ -129,7 +142,7 @@
             return;
 
         using var http = new HttpClient();
-        await http.DeleteAsync(_navigationManager.BaseUri +  $"api/Website/{id}");
+        await http.DeleteAsync(_navigationManager.BaseUri + $"api/Website/{id}");
         await LoadData();
     }
 }

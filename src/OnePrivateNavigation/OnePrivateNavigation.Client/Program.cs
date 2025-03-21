@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 
+Environment.CurrentDirectory = AppContext.BaseDirectory;
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddMudServices(config =>

@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using OnePrivateNavigation.Helpers;
+using Microsoft.Extensions.FileProviders;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
@@ -70,6 +72,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<FaviconHelper>();
+
 #region client need
 
 builder.Services.AddBlazoredLocalStorage();
@@ -102,6 +107,12 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "favicons")),
+    RequestPath = "/favicons"
+});
 
 app.MapStaticAssets();
 app.MapControllers();

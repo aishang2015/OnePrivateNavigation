@@ -1,6 +1,14 @@
 ﻿@page "/"
 @rendermode InteractiveAuto
 @using System
+@using OnePrivateNavigation.Common.Models
+@using OnePrivateNavigation.Common.Models.Category
+@using OnePrivateNavigation.Common.Models.Website
+@using System.Net.Http.Json
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <PageTitle>导航首页</PageTitle>
 
@@ -23,19 +31,19 @@
 
     <!-- 网站导航分组 -->
     <div class="nav-grid">
-        @foreach (var group in _navigationGroups)
+        @foreach (var category in _categories ?? new())
         {
             <div class="nav-card">
                 <div class="nav-card-header">
-                    <h2>@group.GroupName</h2>
+                    <h2>@category.Name</h2>
                 </div>
                 <div class="nav-card-content">
                     <div class="site-grid">
-                        @foreach (var site in group.Sites)
+                        @foreach (var site in _websites?.Where(s => s.CategoryId == category.Id) ?? Array.Empty<WebsiteResponse>())
                         {
                             <button class="site-button" @onclick="@(() => NavigateToSite(site.Url))">
-                                <i class="@GetIconClass(site.Icon)"></i>
-                                <span>@site.Name</span>
+                                <img src="@(NavigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
+                                <span>@site.Title</span>
                             </button>
                         }
                     </div>
@@ -47,13 +55,13 @@
 
 @code {
     private string _searchText = "";
-    private List<NavigationGroup> _navigationGroups = new List<NavigationGroup>();
+    private List<CategoryResponse>? _categories = new();
+    private List<WebsiteResponse>? _websites = new();
     private System.Threading.Timer? _timer;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // 初始化导航分组数据
-        InitializeNavigationGroups();
+        await LoadData();
         
         // 启动定时器更新时间（每秒更新一次）
         _timer = new System.Threading.Timer(_ =>
@@ -67,110 +75,15 @@
         _timer?.Dispose();
     }
 
-    private string GetIconClass(string icon)
+    private async Task LoadData()
     {
-        // 将MudBlazor的图标映射到Font Awesome图标
-        return icon switch
-        {
-            Icons.Custom.Brands.Apple => "fab fa-apple",
-            Icons.Custom.Brands.Google => "fab fa-google",
-            Icons.Custom.Brands.Microsoft => "fab fa-microsoft",
-            Icons.Material.Filled.Translate => "fas fa-language",
-            Icons.Custom.Brands.Twitter => "fab fa-weibo",
-            Icons.Material.Filled.QuestionAnswer => "fas fa-question-circle",
-            Icons.Material.Filled.VideoLibrary => "fas fa-play-circle",
-            Icons.Material.Filled.Videocam => "fas fa-video",
-            Icons.Material.Filled.ShoppingCart => "fas fa-shopping-cart",
-            Icons.Material.Filled.ShoppingBag => "fas fa-shopping-bag",
-            Icons.Material.Filled.LocalOffer => "fas fa-tags",
-            Icons.Material.Filled.Code => "fas fa-code",
-            Icons.Custom.Brands.GitHub => "fab fa-github",
-            Icons.Material.Filled.Help => "fas fa-question",
-            Icons.Material.Filled.Book => "fas fa-book",
-            Icons.Material.Filled.Movie => "fas fa-film",
-            Icons.Material.Filled.Tv => "fas fa-tv",
-            Icons.Material.Filled.Theaters => "fas fa-theater-masks",
-            Icons.Material.Filled.MusicNote => "fas fa-music",
-            Icons.Material.Filled.Newspaper => "fas fa-newspaper",
-            Icons.Material.Filled.Feed => "fas fa-rss",
-            Icons.Material.Filled.Article => "fas fa-file-alt",
-            Icons.Material.Filled.Public => "fas fa-globe",
-            _ => "fas fa-link"
-        };
-    }
+        using var http = new HttpClient();
 
-    private void InitializeNavigationGroups()
-    {
-        // 示例数据，实际应用中可能从API或配置中获取
-        _navigationGroups = new List<NavigationGroup>
-        {
-            new NavigationGroup
-            {
-                GroupName = "常用工具",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "百度", Url = "https://www.baidu.com", Icon = Icons.Custom.Brands.Apple },
-                    new SiteInfo { Name = "谷歌", Url = "https://www.google.com", Icon = Icons.Custom.Brands.Google },
-                    new SiteInfo { Name = "必应", Url = "https://www.bing.com", Icon = Icons.Custom.Brands.Microsoft },
-                    new SiteInfo { Name = "翻译", Url = "https://translate.google.com", Icon = Icons.Material.Filled.Translate }
-                }
-            },
-            new NavigationGroup
-            {
-                GroupName = "社交媒体",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "微博", Url = "https://www.weibo.com", Icon = Icons.Custom.Brands.Twitter },
-                    new SiteInfo { Name = "知乎", Url = "https://www.zhihu.com", Icon = Icons.Material.Filled.QuestionAnswer },
-                    new SiteInfo { Name = "B站", Url = "https://www.bilibili.com", Icon = Icons.Material.Filled.VideoLibrary },
-                    new SiteInfo { Name = "抖音", Url = "https://www.douyin.com", Icon = Icons.Material.Filled.Videocam }
-                }
-            },
-            new NavigationGroup
-            {
-                GroupName = "购物",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "淘宝", Url = "https://www.taobao.com", Icon = Icons.Material.Filled.ShoppingCart },
-                    new SiteInfo { Name = "京东", Url = "https://www.jd.com", Icon = Icons.Material.Filled.ShoppingBag },
-                    new SiteInfo { Name = "拼多多", Url = "https://www.pinduoduo.com", Icon = Icons.Material.Filled.LocalOffer },
-                    new SiteInfo { Name = "亚马逊", Url = "https://www.amazon.cn", Icon = Icons.Custom.Brands.Apple }
-                }
-            },
-            new NavigationGroup
-            {
-                GroupName = "学习",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "CSDN", Url = "https://www.csdn.net", Icon = Icons.Material.Filled.Code },
-                    new SiteInfo { Name = "GitHub", Url = "https://github.com", Icon = Icons.Custom.Brands.GitHub },
-                    new SiteInfo { Name = "Stack Overflow", Url = "https://stackoverflow.com", Icon = Icons.Material.Filled.Help },
-                    new SiteInfo { Name = "掘金", Url = "https://juejin.cn", Icon = Icons.Material.Filled.Book }
-                }
-            },
-            new NavigationGroup
-            {
-                GroupName = "娱乐",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "优酷", Url = "https://www.youku.com", Icon = Icons.Material.Filled.Movie },
-                    new SiteInfo { Name = "腾讯视频", Url = "https://v.qq.com", Icon = Icons.Material.Filled.Tv },
-                    new SiteInfo { Name = "爱奇艺", Url = "https://www.iqiyi.com", Icon = Icons.Material.Filled.Theaters },
-                    new SiteInfo { Name = "网易云音乐", Url = "https://music.163.com", Icon = Icons.Material.Filled.MusicNote }
-                }
-            },
-            new NavigationGroup
-            {
-                GroupName = "新闻",
-                Sites = new List<SiteInfo>
-                {
-                    new SiteInfo { Name = "新浪", Url = "https://www.sina.com.cn", Icon = Icons.Material.Filled.Newspaper },
-                    new SiteInfo { Name = "腾讯", Url = "https://www.qq.com", Icon = Icons.Material.Filled.Feed },
-                    new SiteInfo { Name = "网易", Url = "https://www.163.com", Icon = Icons.Material.Filled.Article },
-                    new SiteInfo { Name = "凤凰网", Url = "https://www.ifeng.com", Icon = Icons.Material.Filled.Public }
-                }
-            }
-        };
+        var categoriesResponse = await http.GetFromJsonAsync<ApiResponse<List<CategoryResponse>>>(NavigationManager.BaseUri + "api/Category");
+        _categories = categoriesResponse?.Data;
+
+        var websitesResponse = await http.GetFromJsonAsync<ApiResponse<List<WebsiteResponse>>>(NavigationManager.BaseUri + "api/Website");
+        _websites = websitesResponse?.Data;
     }
 
     private void HandleSearch()
@@ -196,18 +109,5 @@
         _jsRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
-    // 导航分组数据模型
-    private class NavigationGroup
-    {
-        public string GroupName { get; set; } = "";
-        public List<SiteInfo> Sites { get; set; } = new List<SiteInfo>();
-    }
 
-    // 网站信息数据模型
-    private class SiteInfo
-    {
-        public string Name { get; set; } = "";
-        public string Url { get; set; } = "";
-        public string Icon { get; set; } = Icons.Material.Filled.Link;
-    }
 }

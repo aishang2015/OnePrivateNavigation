@@ -5,6 +5,7 @@ using OnePrivateNavigation.Common.Models;
 using OnePrivateNavigation.Common.Models.Website;
 using OnePrivateNavigation.Data;
 using OnePrivateNavigation.Data.Entities;
+using OnePrivateNavigation.Helpers;
 
 namespace OnePrivateNavigation.Controllers
 {
@@ -14,10 +15,12 @@ namespace OnePrivateNavigation.Controllers
     public class WebsiteController : ControllerBase
     {
         private readonly OnePrivateNavigationDbContext _context;
+        private readonly FaviconHelper _faviconHelper;
 
-        public WebsiteController(OnePrivateNavigationDbContext context)
+        public WebsiteController(OnePrivateNavigationDbContext context, FaviconHelper faviconHelper)
         {
             _context = context;
+            _faviconHelper = faviconHelper;
         }
 
         [HttpGet]
@@ -73,11 +76,12 @@ namespace OnePrivateNavigation.Controllers
                 Title = request.Title,
                 Url = request.Url,
                 Description = request.Description,
-                Icon = request.Icon,
                 DisplayOrder = request.DisplayOrder,
                 IsVisible = request.IsVisible,
                 CategoryId = request.CategoryId
             };
+
+            website.Icon = await _faviconHelper.GetAndSaveFaviconAsync(request.Url);
 
             _context.Websites.Add(website);
             await _context.SaveChangesAsync();
@@ -109,10 +113,11 @@ namespace OnePrivateNavigation.Controllers
             website.Title = request.Title;
             website.Url = request.Url;
             website.Description = request.Description;
-            website.Icon = request.Icon;
             website.DisplayOrder = request.DisplayOrder;
             website.IsVisible = request.IsVisible;
             website.CategoryId = request.CategoryId;
+
+            website.Icon = await _faviconHelper.GetAndSaveFaviconAsync(request.Url);
 
             await _context.SaveChangesAsync();
 
