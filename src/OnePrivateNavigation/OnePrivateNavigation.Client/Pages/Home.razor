@@ -42,8 +42,15 @@
                         @foreach (var site in _websites?.Where(s => s.CategoryId == category.Id) ?? Array.Empty<WebsiteResponse>())
                         {
                             <button class="site-button" @onclick="@(() => NavigateToSite(site.Url))">
-                                <img src="@(NavigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
-                                <span>@site.Title</span>
+                                @if (!string.IsNullOrEmpty(site?.Icon))
+                                {
+                                    <img src="@(NavigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
+                                }
+                                else
+                                {
+                                    <img src="favicon.png" class="site-icon" />
+                                }
+                                <span class="two-line-ellipsis">@site.Title</span>
                             </button>
                         }
                     </div>
@@ -62,7 +69,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
-        
+
         // 启动定时器更新时间（每秒更新一次）
         _timer = new System.Threading.Timer(_ =>
         {

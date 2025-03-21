@@ -17,7 +17,9 @@
         {
             <div class="nav-card">
                 <div class="nav-card-header d-flex align-center">
-                    <h2>@category.Name</h2>
+                    <MudBadge Content="@category.DisplayOrder" Overlap="true" Color="Color.Info">
+                        <h2>@category.Name</h2>
+                    </MudBadge>
                     <MudSpacer />
                     <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
                                    OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
@@ -32,9 +34,21 @@
                                 <ActivatorContent>
 
                                     <button class="site-button">
-                                        <img src="@(_navigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
-                                        <span>@site.Title</span>
+                                        <MudBadge Content="@site.DisplayOrder" Overlap="true" Color="Color.Info">
+
+                                            @if (!string.IsNullOrEmpty(site?.Icon))
+                                            {
+                                                <img src="@(_navigationManager.BaseUri + site.Icon.Substring(1))" class="site-icon" />
+                                            }
+                                            else
+                                            {
+                                                <img src="favicon.png" class="site-icon" />
+                                            }
+                                        </MudBadge>
+                                        <span class="two-line-ellipsis">@site.Title</span>
+
                                     </button>
+
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem OnClick="@(() => OpenWebsiteDialog(site.Id,category.Id))">

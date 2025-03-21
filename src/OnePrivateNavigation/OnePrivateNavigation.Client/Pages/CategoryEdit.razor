@@ -7,7 +7,6 @@
 <MudDialog>
     <DialogContent>
         <MudContainer MaxWidth="MaxWidth.Small">
-            <MudText Typo="Typo.h6" Class="mb-4">@(Id == null ? "添加分组" : "编辑分组")</MudText>
 
             <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />

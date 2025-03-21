@@ -108,9 +108,14 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
+var favicons = Path.Combine(Environment.CurrentDirectory, "favicons");
+if (!Directory.Exists(favicons))
+{
+    Directory.CreateDirectory(favicons);
+}
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "favicons")),
+    FileProvider = new PhysicalFileProvider(favicons),
     RequestPath = "/favicons"
 });
 
