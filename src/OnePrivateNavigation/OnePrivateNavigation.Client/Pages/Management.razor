@@ -17,7 +17,7 @@
         {
             <div class="nav-card">
                 <div class="nav-card-header d-flex align-center">
-                    <MudBadge Content="@category.DisplayOrder" Overlap="true" Color="Color.Info">
+                    <MudBadge Content="@("排序:" + category.DisplayOrder)" Overlap="true" Color="Color.Info">
                         <h2>@category.Name</h2>
                     </MudBadge>
                     <MudSpacer />
@@ -34,7 +34,7 @@
                                 <ActivatorContent>
 
                                     <button class="site-button">
-                                        <MudBadge Content="@site.DisplayOrder" Overlap="true" Color="Color.Info">
+                                        <MudBadge Content="@("排序:" +site.DisplayOrder)" Overlap="true" Color="Color.Info">
 
                                             @if (!string.IsNullOrEmpty(site?.Icon))
                                             {
@@ -45,8 +45,16 @@
                                                 <img src="favicon.png" class="site-icon" />
                                             }
                                         </MudBadge>
-                                        <span class="two-line-ellipsis">@site.Title</span>
-
+                                        @if (site.IsVisible)
+                                        {
+                                            <span class="two-line-ellipsis">@site.Title</span>
+                                        }
+                                        else
+                                        {
+                                            <MudBadge Icon="@Icons.Material.Filled.VisibilityOff">
+                                                <span class="two-line-ellipsis">@site.Title</span>
+                                            </MudBadge>
+                                        }
                                     </button>
 
                                 </ActivatorContent>

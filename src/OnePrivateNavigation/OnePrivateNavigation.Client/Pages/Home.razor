@@ -87,10 +87,10 @@
         using var http = new HttpClient();
 
         var categoriesResponse = await http.GetFromJsonAsync<ApiResponse<List<CategoryResponse>>>(NavigationManager.BaseUri + "api/Category");
-        _categories = categoriesResponse?.Data;
+        _categories = categoriesResponse?.Data?.Where(c => c.IsVisible).ToList();
 
         var websitesResponse = await http.GetFromJsonAsync<ApiResponse<List<WebsiteResponse>>>(NavigationManager.BaseUri + "api/Website");
-        _websites = websitesResponse?.Data;
+        _websites = websitesResponse?.Data?.Where(c => c.IsVisible).ToList();
     }
 
     private void HandleSearch()
