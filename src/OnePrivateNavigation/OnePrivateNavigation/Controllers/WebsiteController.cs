@@ -9,7 +9,7 @@ using OnePrivateNavigation.Helpers;
 
 namespace OnePrivateNavigation.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class WebsiteController : ControllerBase
@@ -24,6 +24,7 @@ namespace OnePrivateNavigation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<List<WebsiteResponse>>>> GetWebsites()
         {
             var websites = await _context.Websites

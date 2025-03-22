@@ -21,6 +21,7 @@ namespace OnePrivateNavigation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<List<CategoryResponse>>>> GetCategories()
         {
             var categories = await _context.Categories

@@ -10,7 +10,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
-<PageTitle>导航首页</PageTitle>
+<PageTitle>OnePrivateNavigation</PageTitle>
 
 <div class="container">
     <!-- 顶部日期时间显示 -->
@@ -24,7 +24,7 @@
         <div class="search-box">
             <input type="text" @bind="_searchText" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="输入关键词搜索..." />
             <button class="search-button" @onclick="HandleSearch">
-                <i class="fas fa-search"></i>
+                <MudIcon Icon="@Icons.Material.Filled.Search" />
             </button>
         </div>
     </div>

@@ -23,9 +23,9 @@
                     </MudBadge>
                     <MudSpacer />
                     <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
-                                   OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
+                    OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
                     <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"
-                                   OnClick="@(() => DeleteCategory(category.Id))"></MudIconButton>
+                    OnClick="@(() => DeleteCategory(category.Id))"></MudIconButton>
                 </div>
                 <div class="nav-card-content">
                     <div class="site-grid">
@@ -97,12 +97,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await LoadData();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadData()
     {
         using var http = new HttpClient();
+        var token = await _localStorage.GetItemAsStringAsync("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
 
         var categoriesResponse = await http.GetFromJsonAsync<ApiResponse<List<CategoryResponse>>>(NavigationManager.BaseUri + "api/Category");
         categories = categoriesResponse?.Data;
@@ -155,6 +169,11 @@
             return;
 
         using var http = new HttpClient();
+        var token = await _localStorage.GetItemAsStringAsync("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
         await http.DeleteAsync(_navigationManager.BaseUri + $"api/Category/{id}");
         await LoadData();
     }
@@ -165,6 +184,11 @@
             return;
 
         using var http = new HttpClient();
+        var token = await _localStorage.GetItemAsStringAsync("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
         await http.DeleteAsync(_navigationManager.BaseUri + $"api/Website/{id}");
         await LoadData();
     }

@@ -43,10 +43,15 @@
     private CategoryRequest model = new();
 
     protected override async Task OnInitializedAsync()
-    {   
+    {
         if (Id.HasValue)
         {
             using var Http = new HttpClient();
+            var token = await _localStorage.GetItemAsStringAsync("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
             var response = await Http.GetFromJsonAsync<ApiResponse<CategoryResponse>>(NavigationManager.BaseUri + $"api/Category/{Id}");
             if (response?.Data != null)
             {
@@ -63,6 +68,11 @@
         try
         {
             using var Http = new HttpClient();
+            var token = await _localStorage.GetItemAsStringAsync("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
             if (Id.HasValue)
             {
                 await Http.PutAsJsonAsync(NavigationManager.BaseUri + $"api/Category/{Id}", model);

@@ -53,6 +53,11 @@
     protected override async Task OnInitializedAsync()
     {
         using var Http = new HttpClient();
+        var token = await _localStorage.GetItemAsStringAsync("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
         var categoriesResponse = await Http.GetFromJsonAsync<ApiResponse<List<CategoryResponse>>>(NavigationManager.BaseUri + "api/Category");
         categories = categoriesResponse?.Data;
 
@@ -80,6 +85,11 @@
         try
         {
             using var Http = new HttpClient();
+            var token = await _localStorage.GetItemAsStringAsync("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
             if (Id.HasValue)
             {
                 await Http.PutAsJsonAsync(NavigationManager.BaseUri + $"api/Website/{Id}", model);
