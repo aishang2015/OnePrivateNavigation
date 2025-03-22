@@ -40,7 +40,7 @@ namespace OnePrivateNavigation.Controllers
                 });
             }
 
-            if (user.PasswordHash != HashHelper.ComputeSHA256(request.Password))
+            if (user.PasswordHash != HashHelper.ComputeSHA256(request.Password + user.Salt))
             {
                 return BadRequest(new ApiResponse<LoginResponse>
                 {

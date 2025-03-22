@@ -26,18 +26,25 @@ builder.Services.AddMudServices();
 
 builder.Services.AddDbContext<OnePrivateNavigationDbContext>(options =>
 {
+    var dbPath = Path.Combine(Environment.CurrentDirectory, "DB");
+    if (!Directory.Exists(dbPath))
+    {
+        Directory.CreateDirectory(dbPath);
+    }
     options
-        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseSqlite("Data Source=DB\\OnePrivateNavigation.db")
         .UseAsyncSeeding(async (context, _, cancellationToken) =>
         {
             if (!context.Set<User>().Any())
             {
+                var salt = Guid.NewGuid().ToString("N");
                 context.Set<User>().Add(new User
                 {
                     Id = 1,
                     Username = "admin",
-                    PasswordHash = HashHelper.ComputeSHA256("admin123"),
+                    PasswordHash = HashHelper.ComputeSHA256("admin" + salt),
                     Email = "admin@example.com",
+                    Salt = salt,
                     CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     IsActive = true
                 });
