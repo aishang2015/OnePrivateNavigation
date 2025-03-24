@@ -1,6 +1,6 @@
 # OnePrivateNavigation
 
-一个极简单的自定义导航，开箱即用，适合个人和小组使用。
+一个极简风格的导航网站，自托管，开箱即用，适合个人和小组使用。
 
 ## 使用方式
 下载压缩包，找到OnePrivateNavigation.exe双击运行。
