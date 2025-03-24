@@ -9,6 +9,7 @@ using OnePrivateNavigation.Data.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnePrivateNavigation.Controllers
 {
@@ -71,6 +72,7 @@ namespace OnePrivateNavigation.Controllers
         {
             var claims = new[]
             {
+                new Claim(JwtRegisteredClaimNames.Sid, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -87,6 +89,69 @@ namespace OnePrivateNavigation.Controllers
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
+
+        [Authorize]
+        [HttpPut("update-user")]
+        public async Task<ActionResult<ApiResponse<LoginResponse>>> UpdateUser(UpdateUserRequest request)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sid)?.Value;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            if (user == null)
+            {
+                return BadRequest(new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "用户不存在"
+                });
+            }
+
+            if (user.PasswordHash != HashHelper.ComputeSHA256(request.OldPassword))
+            {
+                return BadRequest(new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "原密码错误"
+                });
+            }
+
+            if (!string.IsNullOrEmpty(request.NewUsername))
+            {
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == request.NewUsername && u.Id != user.Id);
+                if (existingUser != null)
+                {
+                    return BadRequest(new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "用户名已被使用"
+                    });
+                }
+                user.Username = request.NewUsername;
+            }
+
+            if (!string.IsNullOrEmpty(request.NewPassword))
+            {
+                user.PasswordHash = HashHelper.ComputeSHA256(request.NewPassword);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var token = GenerateJwtToken(user);
+
+            return Ok(new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Data = new LoginResponse
+                {
+                    Token = token,
+                    Username = user.Username,
+                    Email = user.Email
+                }
+            });
         }
 
     }

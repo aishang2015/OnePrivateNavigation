@@ -1,0 +1,82 @@
+
+@using Blazored.LocalStorage
+@using OnePrivateNavigation.Common.Models
+@using OnePrivateNavigation.Common.Models.Auth
+
+<MudDialog>
+    <DialogContent>
+        <div style="width:400px;">
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudTextField T="string" Label="新用户名" @bind-Value="newUsername" Required="true"
+                              RequiredError="请输入新用户名" Class="mb-3" />
+                <MudTextField T="string" Label="原密码" @bind-Value="oldPassword" Required="true"
+                              RequiredError="请输入原密码" InputType="InputType.Password" Class="mb-3" />
+                <MudTextField T="string" Label="新密码" @bind-Value="newPassword" Required="true"
+                              RequiredError="请输入新密码" InputType="InputType.Password" Class="mb-3" />
+                <MudTextField T="string" Label="确认新密码" @bind-Value="confirmPassword" Required="true"
+                              RequiredError="请再次输入新密码" InputType="InputType.Password" Class="mb-3"
+                              Validation="@(new Func<string, string>(ConfirmPasswordValidation))" />
+            </MudForm>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">取消</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">保存</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    private MudForm form;
+    private bool success;
+    private string newUsername;
+    private string oldPassword;
+    private string newPassword;
+    private string confirmPassword;
+
+    private string ConfirmPasswordValidation(string arg)
+    {
+        if (newPassword != arg)
+            return "两次输入的密码不一致";
+        return null;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (success)
+        {
+            try
+            {
+                var httpClient = new HttpClient();
+                var token = await _localStorage.GetItemAsStringAsync("authToken");
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                var response = await httpClient.PutAsJsonAsync(_navigationManager.BaseUri + "api/auth/update-user", new UpdateUserRequest
+                    {
+                        NewUsername = newUsername,
+                        OldPassword = oldPassword,
+                        NewPassword = newPassword
+                    });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _snackbar.Add("用户信息更新成功", Severity.Success);
+                    MudDialog.Close();
+                }
+                else
+                {
+                    var error = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>();
+                    _snackbar.Add(error.Message, Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("更新失败：" + ex.Message, Severity.Error);
+            }
+        }
+    }
+}

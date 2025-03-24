@@ -1,4 +1,5 @@
 ﻿@using Blazored.LocalStorage
+@using OnePrivateNavigation.Client.Components
 @rendermode InteractiveWebAssembly
 
 <MudAppBar Elevation="1" Dense=true Fixed=false>
@@ -12,12 +13,19 @@
             </MudAvatar>
         </ActivatorContent>
         <ChildContent>
+            <MudMenuItem Label="修改个人信息" Icon="@Icons.Material.Filled.Edit" OnClick="OpenEditUserDialog" />
             <MudMenuItem Label="退出登录" Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" />
         </ChildContent>
     </MudMenu>
 </MudAppBar>
 
 @code {
+
+    private async Task OpenEditUserDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        await _dialogService.ShowAsync<EditUserDialog>("修改个人信息", options);
+    }
 
     private async Task HandleLogout()
     {
