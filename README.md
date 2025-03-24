@@ -3,7 +3,7 @@
 一个极简单的自定义导航，开箱即用，适合个人和小组使用。
 
 ## 使用方式
-下载安装包，找到OnePrivateNavigation.exe双击运行。
+下载压缩包，找到OnePrivateNavigation.exe双击运行。
 浏览器访问 http://127.0.0.1:30000/ 进行访问，局域网修改对应ip即可。
 http://127.0.0.1:30000/login 进入管理后台管理导航分组和网址，默认用户名: admin 密码:admin 
 可自行用nssm或其他方式托管服务
