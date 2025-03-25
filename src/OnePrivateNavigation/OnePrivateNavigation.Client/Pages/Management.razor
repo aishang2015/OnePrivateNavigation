@@ -9,7 +9,7 @@
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 
-@rendermode InteractiveAuto
+@rendermode InteractiveWebAssembly
 @attribute [Authorize]
 
 <div class="container">
@@ -23,9 +23,9 @@
                     </MudBadge>
                     <MudSpacer />
                     <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
-                    OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
+                                   OnClick="@(() => OpenCategoryDialog(category.Id))"></MudIconButton>
                     <MudIconButton Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Delete"
-                    OnClick="@(() => DeleteCategory(category.Id))"></MudIconButton>
+                                   OnClick="@(() => DeleteCategory(category.Id))"></MudIconButton>
                 </div>
                 <div class="nav-card-content">
                     <div class="site-grid">

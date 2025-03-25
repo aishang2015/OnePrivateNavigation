@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using OnePrivateNavigation.Helpers;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.ResponseCompression;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
@@ -82,6 +83,13 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<FaviconHelper>();
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.EnableForHttps = true;
+});
+
 #region client need
 
 builder.Services.AddBlazoredLocalStorage();
@@ -109,6 +117,7 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
+app.UseResponseCompression();
 
 app.UseAntiforgery();
 

@@ -22,7 +22,7 @@ namespace OnePrivateNavigation.Helpers
                 using var client = _httpClientFactory.CreateClient();
                 var baseUri = new Uri(websiteUrl);
                 var faviconUrl = await GetFaviconUrlAsync(client, baseUri);
-                
+
                 if (string.IsNullOrEmpty(faviconUrl))
                 {
                     return null;
@@ -45,8 +45,11 @@ namespace OnePrivateNavigation.Helpers
 
         private async Task<string?> GetFaviconUrlAsync(HttpClient client, Uri baseUri)
         {
+            // 从baseUri中获取根路由
+            var rootUrl = baseUri.GetLeftPart(UriPartial.Authority);
+
             // 尝试直接访问/favicon.ico
-            var directFaviconUrl = new Uri(baseUri, "/favicon.ico");
+            var directFaviconUrl = new Uri(rootUrl + "/favicon.ico");
             try
             {
                 var response = await client.GetAsync(directFaviconUrl);
